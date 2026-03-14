@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>BookTrack - Resumen</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); width: 420px; text-align: center; }
+        h1 { font-size: 1.6rem; margin-bottom: 16px; color: #333; }
+        p { color: #666; margin-bottom: 10px; line-height: 1.6; }
+        a { display: inline-block; margin-top: 24px; color: #e25555; text-decoration: none; font-size: 0.95rem; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>¡Bienvenido de nuevo, <span th:text="${nombre}"></span>! 👋</h1>
+        <p>Esta es tu página de <strong>Resumen personal</strong>.</p>
+        <p>Aquí irán más adelante: libros leídos este mes, progreso anual, estadísticas...</p>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</body>
+</html>
