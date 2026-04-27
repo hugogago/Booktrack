@@ -1,0 +1,16 @@
+es\colegiocalasanz\booktrack\controller\HomeController$MessageResponse.class
+es\colegiocalasanz\booktrack\security\JwtTokenProvider.class
+es\colegiocalasanz\booktrack\repository\UserRepository$1.class
+es\colegiocalasanz\booktrack\controller\AuthController.class
+es\colegiocalasanz\booktrack\security\JwtAuthenticationFilter.class
+es\colegiocalasanz\booktrack\service\AuthService.class
+es\colegiocalasanz\booktrack\controller\AuthController$ErrorResponse.class
+es\colegiocalasanz\booktrack\controller\AuthController$SuccessResponse.class
+es\colegiocalasanz\booktrack\dto\AuthResponse.class
+es\colegiocalasanz\booktrack\controller\HomeController.class
+es\colegiocalasanz\booktrack\security\SecurityConfig.class
+es\colegiocalasanz\booktrack\entity\User.class
+es\colegiocalasanz\booktrack\repository\UserRepository.class
+es\colegiocalasanz\booktrack\dto\RegisterRequest.class
+es\colegiocalasanz\booktrack\BooktrackApplication.class
+es\colegiocalasanz\booktrack\dto\LoginRequest.class

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: es.colegiocalasanz.booktrack.BooktrackApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.260 s -- in es.colegiocalasanz.booktrack.BooktrackApplicationTests
