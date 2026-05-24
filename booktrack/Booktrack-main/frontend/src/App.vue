@@ -3,31 +3,28 @@
     <section v-if="!token" class="auth-layout">
       <div class="hero-panel">
         <p class="eyebrow">BookTrack</p>
-        <h1>Tu espacio para organizar lecturas, medir progreso y cerrar el ano con objetivos claros.</h1>
-        <p class="hero-copy">
-          El anteproyecto pide una plataforma con resumen personal, biblioteca, detalle de libro,
-          buscador y estadisticas. Esta version ya articula ese flujo completo.
-        </p>
+        <h1>Tu espacio para organizar lecturas, medir progreso y cerrar el año con objetivos claros.</h1>
+        
 
         <div class="hero-metrics">
           <article>
             <strong>Resumen</strong>
-            <span>Lecturas del mes y del ano</span>
+            <span>Lecturas del mes y del año</span>
           </article>
           <article>
             <strong>Biblioteca</strong>
-            <span>Leidos, en curso y pendientes</span>
+            <span>Leídos, en curso y pendientes</span>
           </article>
           <article>
-            <strong>Estadisticas</strong>
-            <span>Graficas por mes y genero</span>
+            <strong>Estadísticas</strong>
+            <span>Gráficas por mes y género</span>
           </article>
         </div>
       </div>
 
       <div class="auth-panel">
         <div class="auth-toggle">
-          <button :class="{ active: showLogin }" @click="showLogin = true">Iniciar sesion</button>
+          <button :class="{ active: showLogin }" @click="showLogin = true">Iniciar sesión</button>
           <button :class="{ active: !showLogin }" @click="showLogin = false">Crear cuenta</button>
         </div>
 
@@ -38,8 +35,8 @@
             <input v-model="loginForm.username" required placeholder="alvaro" />
           </label>
           <label>
-            Contrasena
-            <input v-model="loginForm.password" type="password" required placeholder="Tu contrasena" />
+            Contraseña
+            <input v-model="loginForm.password" type="password" required placeholder="Tu contraseña" />
           </label>
           <button class="primary-btn" type="submit">Entrar</button>
         </form>
@@ -80,6 +77,7 @@
         <nav class="side-nav">
           <button :class="{ active: currentView === 'summary' }" @click="currentView = 'summary'">Resumen</button>
           <button :class="{ active: currentView === 'library' }" @click="currentView = 'library'">Biblioteca</button>
+          <button :class="{ active: currentView === 'catalog' }" @click="currentView = 'catalog'; fetchCatalog()">Catalogo</button>
           <button :class="{ active: currentView === 'statistics' }" @click="currentView = 'statistics'">Estadisticas</button>
           <button :class="{ active: currentView === 'profile' }" @click="currentView = 'profile'">Perfil</button>
         </nav>
@@ -115,7 +113,7 @@
           <article class="metric-card">
             <span>Total anual</span>
             <strong>{{ summary.currentYearReadCount }}</strong>
-            <small>Libros finalizados este ano</small>
+            <small>Libros finalizados este año</small>
           </article>
           <article class="metric-card">
             <span>En curso</span>
@@ -193,7 +191,7 @@
             </form>
           </article>
 
-          <article class="panel">
+          <article class="panel" id="book-form-panel">
             <div class="panel-head">
               <div>
                 <h3>{{ editingBookId ? 'Editar libro' : 'Anadir libro' }}</h3>
@@ -293,7 +291,9 @@
 
                 <div class="card-actions">
                   <button class="ghost-btn" @click="editBook(book)">Editar</button>
-                  <button class="ghost-btn" @click="markAsRead(book)">Marcar leido</button>
+                  <button :class="book.status === 'READ' ? 'active-read-btn' : 'ghost-btn'" @click="toggleReadStatus(book)">
+                    {{ book.status === 'READ' ? 'Quitar leido' : 'Marcar leido' }}
+                  </button>
                   <button class="danger-btn" @click="deleteBook(book)">Eliminar</button>
                 </div>
               </article>
@@ -326,6 +326,63 @@
               <p class="detail-comments">{{ selectedBook.comments || 'Sin comentarios todavia.' }}</p>
             </div>
             <p v-else class="empty-state">Selecciona un libro para ver su ficha completa.</p>
+          </article>
+        </section>
+
+        <section v-if="currentView === 'catalog'" class="view-grid catalog-grid">
+          <article class="panel wide">
+            <div class="panel-head">
+              <div>
+                <h3>Catalogo general</h3>
+                <p>Explora todos los libros registrados en BookTrack y añadelos a tu biblioteca.</p>
+              </div>
+            </div>
+
+            <form class="filters-grid" @submit.prevent="fetchCatalog">
+              <input v-model="catalogFilters.search" placeholder="Buscar por titulo, autor o genero" />
+              <input v-model="catalogFilters.genre" placeholder="Genero" />
+              <div class="filter-actions">
+                <button class="primary-btn" type="submit">Buscar</button>
+                <button class="ghost-btn" type="button" @click="resetCatalogFilters">Limpiar</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="panel wide">
+            <div class="panel-head">
+              <div>
+                <h3>Libros disponibles</h3>
+                <p>{{ filteredCatalogBooks.length }} libros en el catalogo.</p>
+              </div>
+            </div>
+
+            <div v-if="filteredCatalogBooks.length" class="library-cards">
+              <article v-for="(book, index) in filteredCatalogBooks" :key="index" class="library-card">
+                <div class="library-card-head">
+                  <div>
+                    <h4>{{ book.title }}</h4>
+                    <p>{{ book.author }}</p>
+                  </div>
+                  <button class="primary-btn" @click="addFromCatalog(book)">Añadir</button>
+                </div>
+
+                <dl>
+                  <div>
+                    <dt>Genero</dt>
+                    <dd>{{ book.genre || 'Sin definir' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Editorial</dt>
+                    <dd>{{ book.publisher || 'Sin definir' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Paginas</dt>
+                    <dd>{{ book.totalPages || 0 }}</dd>
+                  </div>
+                </dl>
+              </article>
+            </div>
+            <p v-else class="empty-state">No hay libros que coincidan con la busqueda.</p>
           </article>
         </section>
 
@@ -402,7 +459,7 @@
             <div class="panel-head">
               <div>
                 <h3>Objetivo lector anual</h3>
-                <p>Define cuantos libros quieres completar este ano.</p>
+                <p>Define cuantos libros quieres completar este año.</p>
               </div>
             </div>
 
@@ -467,6 +524,8 @@ export default {
       statistics: { monthlyReads: [], genreBreakdown: [] },
       books: [],
       filters: { search: '', status: '', author: '', genre: '', publisher: '' },
+      catalogBooks: [],
+      catalogFilters: { search: '', genre: '' },
       bookForm: createEmptyBookForm(),
       selectedBook: null,
       editingBookId: null,
@@ -478,6 +537,7 @@ export default {
       return {
         summary: 'Resumen personal',
         library: 'Biblioteca y buscador',
+        catalog: 'Catalogo general',
         statistics: 'Estadisticas de lectura',
         profile: 'Perfil y objetivos'
       }
@@ -491,6 +551,14 @@ export default {
     maxMonthlyReadValue() {
       const values = this.statistics.monthlyReads.map((point) => point.value)
       return Math.max(1, ...values)
+    },
+    filteredCatalogBooks() {
+      const owned = new Set(
+        this.books.map((b) => `${b.title.toLowerCase()}|||${b.author.toLowerCase()}`)
+      )
+      return this.catalogBooks.filter(
+        (b) => !owned.has(`${b.title.toLowerCase()}|||${b.author.toLowerCase()}`)
+      )
     }
   },
   async created() {
@@ -603,11 +671,16 @@ export default {
         finishedDate: book.finishedDate || ''
       }
       this.openBook(book)
+      this.$nextTick(() => {
+        document.getElementById('book-form-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
     },
-    async markAsRead(book) {
+    async toggleReadStatus(book) {
+      const newStatus = book.status === 'READ' ? 'PENDING' : 'READ'
+      const msg = newStatus === 'READ' ? 'Libro marcado como leido.' : 'Libro marcado como pendiente.'
       try {
-        await api.put(`/books/${book.id}/status`, null, { params: { status: 'READ' } })
-        this.setFeedback('success', 'Libro marcado como leido.')
+        await api.put(`/books/${book.id}/status`, null, { params: { status: newStatus } })
+        this.setFeedback('success', msg)
         await Promise.all([this.fetchBooks(), this.fetchSummary(), this.fetchStatistics()])
       } catch (error) {
         this.setFeedback('error', this.extractError(error, 'No se pudo actualizar el estado del libro.'))
@@ -645,6 +718,41 @@ export default {
     resetFilters() {
       this.filters = { search: '', status: '', author: '', genre: '', publisher: '' }
       this.fetchBooks()
+    },
+    async fetchCatalog() {
+      try {
+        const params = {}
+        if (this.catalogFilters.search) params.search = this.catalogFilters.search
+        if (this.catalogFilters.genre) params.genre = this.catalogFilters.genre
+        const response = await api.get('/catalog', { params })
+        this.catalogBooks = response.data
+      } catch (error) {
+        this.setFeedback('error', this.extractError(error, 'No se pudo cargar el catalogo.'))
+      }
+    },
+    resetCatalogFilters() {
+      this.catalogFilters = { search: '', genre: '' }
+      this.fetchCatalog()
+    },
+    async addFromCatalog(book) {
+      try {
+        await api.post('/books', {
+          title: book.title,
+          author: book.author,
+          genre: book.genre || null,
+          publisher: book.publisher || null,
+          totalPages: book.totalPages || 0,
+          personalRating: null,
+          comments: null,
+          status: 'PENDING',
+          startedDate: null,
+          finishedDate: null
+        })
+        this.setFeedback('success', `"${book.title}" añadido a tu biblioteca.`)
+        await Promise.all([this.fetchBooks(), this.fetchSummary()])
+      } catch (error) {
+        this.setFeedback('error', this.extractError(error, 'No se pudo añadir el libro.'))
+      }
     },
     logout() {
       this.token = ''
@@ -916,6 +1024,16 @@ textarea {
 .danger-btn {
   background: rgba(180, 35, 24, 0.12);
   color: var(--danger);
+}
+
+.active-read-btn {
+  background: rgba(34, 139, 80, 0.15);
+  color: #1a7a45;
+  border: 1px solid rgba(34, 139, 80, 0.3);
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 .link-btn {

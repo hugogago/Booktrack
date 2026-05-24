@@ -69,6 +69,10 @@ public class BookRepository {
         return candidates[0];
     }
 
+    public List<Book> findAll() {
+        return List.copyOf(books);
+    }
+
     public List<Book> findByOwnerUsername(String username) {
         return books.stream()
                 .filter(book -> username.equals(book.getOwnerUsername()))
