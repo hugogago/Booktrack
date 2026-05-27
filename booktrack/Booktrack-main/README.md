@@ -1,102 +1,133 @@
 # 📚 BookTrack
 
-Aplicación web para el seguimiento personal de libros leídos, desarrollada con **Spring Boot + Thymeleaf + Spring Security**.
+Aplicación web que combina un backend Spring Boot con un frontend Vue 3, usando MySQL para persistencia de datos.
 
 ---
 
-## 🚀 Estado actual
-
-La aplicación ya cubre el flujo base descrito en el anteproyecto:
+## 🚀 Qué hace este proyecto
 
 - Registro e inicio de sesión con JWT
-- Resumen personal con lecturas del mes, total anual, libros en curso y pendientes
-- Biblioteca personal con alta, edición, borrado y cambio de estado de libros
-- Detalle del libro con título, autor, género, editorial, páginas, nota personal y comentarios
-- Buscador con filtros por estado, autor, género, editorial y texto libre
-- Estadísticas de lectura por mes y distribución por géneros
-- Objetivo anual configurable con seguimiento de progreso
+- Biblioteca personal por usuario con CRUD de libros
+- Dashboard con métricas de lectura mensual y anual
+- Estadísticas por géneros y tiempos de lectura
+- Catálogo compartido de libros que todos los usuarios pueden consultar
 
 ---
 
-## 🛠️ Tecnologías utilizadas
+## 🧱 Tecnologías principales
 
-| Tecnología       | Versión  | Uso                                  |
-|------------------|----------|--------------------------------------|
-| Java             | 17       | Lenguaje principal                   |
-| Spring Boot      | 3.4.0    | API REST                             |
-| Spring Security  | 6.x      | Autenticación y seguridad            |
-| JWT              | 0.12.6   | Gestión de sesión stateless          |
-| Vue              | 3.x      | Interfaz web                         |
-| Vite             | 5.x      | Entorno de desarrollo frontend       |
-| Maven            | 3.9.6    | Gestión de dependencias backend      |
-
----
-
-## ▶️ Cómo ejecutar el proyecto
-
-### Requisitos previos
-
-- Java 17 o superior instalado
-- Node.js 18 o superior instalado
-
-### Pasos
-
-**1. Ejecuta el backend:**
-```bash
-cd booktrack
-./maven/apache-maven-3.9.6/bin/mvn spring-boot:run
-```
-
-El backend queda disponible en:
-```
-http://localhost:8081
-```
-
-**2. Ejecuta el frontend:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-El frontend queda disponible en:
-```
-http://localhost:3000
-```
-
----
-
-## 🔐 Credenciales de prueba
-
-| Campo      | Valor   |
-|------------|---------|
-| Usuario    | `alvaro` |
-| Contraseña | `1234`  |
+| Tecnología | Versión | Uso |
+|-----------|--------|-----|
+| Java | 17 | Backend |
+| Spring Boot | 3.4.0 | API REST |
+| Spring Security | 6.x | Seguridad |
+| JWT | 0.12.6 | Autenticación stateless |
+| MySQL | 8.0 | Persistencia |
+| Vue 3 | 3.x | Frontend |
+| Vite | 5.x | Bundling |
+| Docker Compose | — | Orquestación |
 
 ---
 
 ## 📁 Estructura del proyecto
 
 ```
-booktrack/
-├── src/main/java/es/colegiocalasanz/booktrack/
-│   ├── controller/                         # Endpoints de auth, biblioteca y dashboard
-│   ├── dto/                                # DTOs de peticiones y respuestas
-│   ├── entity/                             # User, Book y ReadingStatus
-│   ├── repository/                         # Persistencia JSON de usuarios y libros
-│   ├── security/                           # JWT + configuración de seguridad
-│   └── service/                            # Lógica de autenticación y estadísticas
-├── src/main/resources/
-│   ├── application.properties
-│   ├── users.json
-│   └── books.json                          # Se genera al guardar libros
-frontend/
-├── src/App.vue                             # Interfaz principal
-├── src/api.js                              # Cliente Axios para la API
-└── vite.config.js
+Booktrack/                                 # raíz del repositorio
+├── docker-compose.yml                     # orquesta db, backend y frontend
+└── Booktrack-main/                        # carpeta del proyecto principal
+    ├── README.md                         # este documento
+    ├── booktrack/                         # backend Spring Boot
+    │   ├── dockerfile                     # Dockerfile backend
+    │   ├── pom.xml                        # dependencias backend
+    │   ├── maven/                         # Maven local opcional
+    │   └── src/
+    │       └── main/
+    │           ├── java/es/colegiocalasanz/booktrack/
+    │           └── resources/application.properties
+    └── frontend/                          # frontend Vue 3
+        ├── Dockerfile                     # Dockerfile frontend
+        ├── package.json
+        ├── package-lock.json
+        └── src/
+            ├── App.vue
+            └── api.js
 ```
 
+---
 
+## ▶️ Arrancar con Docker Compose (recomendado)
 
+Desde la carpeta que contiene este README (`Booktrack-main`), sube una carpeta para llegar al `docker-compose.yml`:
 
+```bash
+cd ..
+docker compose up --build -d
+```
+
+Luego accede a:
+
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8081
+
+Para detener:
+
+```bash
+docker compose down
+```
+
+---
+
+## ▶️ Ejecutar local sin Docker
+
+### Backend
+
+```
+cd booktrack
+./maven/apache-maven-3.9.6/bin/mvn spring-boot:run
+```
+
+Si tienes Maven instalado globalmente, también vale:
+
+```
+cd booktrack
+mvn spring-boot:run
+```
+
+### Frontend
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+### Base de datos
+
+Necesitas una instancia MySQL accesible en `localhost:3306` y la base de datos `booktrack`.
+La configuración de conexión está en `Booktrack-main/booktrack/src/main/resources/application.properties`.
+
+---
+
+## 📌 Comportamiento actual
+
+- El catálogo usa la tabla `books` y es igual para todos los usuarios.
+- La biblioteca personal se filtra por `ownerUsername`.
+- No hay tests en el repositorio.
+- Se han borrado los artefactos generados (`target`, `frontend/dist`, `frontend/node_modules`) y archivos de editor innecesarios (`.classpath`, `.project`, `.settings`).
+
+---
+
+## 🗄️ Consultas útiles
+
+Ver libros:
+
+```bash
+docker compose exec -T db mysql -uroot -proot -D booktrack -e "SELECT id, owner_username, title, author, genre, publisher, total_pages, status FROM books;"
+```
+
+Ver usuarios:
+
+```bash
+docker compose exec -T db mysql -uroot -proot -D booktrack -e "SELECT id, username, email, annual_goal FROM users;"
+```
 

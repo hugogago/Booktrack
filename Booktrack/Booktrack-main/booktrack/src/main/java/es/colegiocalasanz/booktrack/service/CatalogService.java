@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 public class CatalogService {
@@ -17,18 +19,29 @@ public class CatalogService {
     private BookRepository bookRepository;
 
     public List<CatalogBookResponse> getCatalog(String search, String genre) {
-        return bookRepository.findAll().stream()
+        Map<String, CatalogBookResponse> uniqueBooks = new LinkedHashMap<>();
+
+        bookRepository.findAll().stream()
                 .filter(book -> matchesSearch(book, search))
                 .filter(book -> matchesField(book.getGenre(), genre))
-                .sorted(Comparator.comparing(Book::getTitle, String.CASE_INSENSITIVE_ORDER))
-                .map(book -> new CatalogBookResponse(
-                        book.getTitle(),
-                        book.getAuthor(),
-                        book.getGenre(),
-                        book.getPublisher(),
-                        book.getTotalPages()))
-                .distinct()
-                .toList();
+                .sorted(Comparator.comparing(Book::getTitle, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Book::getAuthor, String.CASE_INSENSITIVE_ORDER))
+                .forEach(book -> uniqueBooks.putIfAbsent(
+                        uniqueKey(book),
+                        new CatalogBookResponse(
+                                book.getTitle(),
+                                book.getAuthor(),
+                                book.getGenre(),
+                                book.getPublisher(),
+                                book.getTotalPages())));
+
+        return List.copyOf(uniqueBooks.values());
+    }
+
+    private String uniqueKey(Book book) {
+        return (book.getTitle() == null ? "" : book.getTitle().toLowerCase(Locale.ROOT).trim())
+                + "||"
+                + (book.getAuthor() == null ? "" : book.getAuthor().toLowerCase(Locale.ROOT).trim());
     }
 
     private boolean matchesSearch(Book book, String search) {

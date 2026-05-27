@@ -553,12 +553,7 @@ export default {
       return Math.max(1, ...values)
     },
     filteredCatalogBooks() {
-      const owned = new Set(
-        this.books.map((b) => `${b.title.toLowerCase()}|||${b.author.toLowerCase()}`)
-      )
-      return this.catalogBooks.filter(
-        (b) => !owned.has(`${b.title.toLowerCase()}|||${b.author.toLowerCase()}`)
-      )
+      return this.catalogBooks
     }
   },
   async created() {

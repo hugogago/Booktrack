@@ -1,22 +1,60 @@
 package es.colegiocalasanz.booktrack.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 
+@Entity
+@Table(name = "books")
 public class Book {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String ownerUsername;
+
+    @Column(nullable = false)
     private String title;
+
+    @Column(nullable = false)
     private String author;
+
     private String genre;
     private String publisher;
+
+    @Column(nullable = false)
     private int totalPages;
+
     private Integer personalRating;
+
+    @Column(length = 2000)
     private String comments;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ReadingStatus status = ReadingStatus.PENDING;
-    private LocalDate addedDate = LocalDate.now();
+
+    @Column(nullable = false)
+    private LocalDate addedDate;
+
     private LocalDate startedDate;
     private LocalDate finishedDate;
+
+    @PrePersist
+    void onCreate() {
+        if (addedDate == null) {
+            addedDate = LocalDate.now();
+        }
+    }
 
     public Long getId() {
         return id;
