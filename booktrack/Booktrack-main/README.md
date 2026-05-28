@@ -131,3 +131,91 @@ Ver usuarios:
 docker compose exec -T db mysql -uroot -proot -D booktrack -e "SELECT id, username, email, annual_goal FROM users;"
 ```
 
+##  BBDD
+
+-- ============================================================
+-- BookTrack - Esquema de base de datos MySQL 8.0
+-- Basado en el diseño del anteproyecto (ER + diagrama relacional)
+-- ============================================================
+
+CREATE DATABASE IF NOT EXISTS booktrack
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE booktrack;
+
+-- ------------------------------------------------------------
+-- Tabla: usuario
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS usuario (
+    id_usuario      INT             NOT NULL AUTO_INCREMENT,
+    nombre          VARCHAR(100)    NOT NULL,
+    email           VARCHAR(150)    NOT NULL,
+    password        VARCHAR(255)    NOT NULL,
+    fecha_registro  DATE            NOT NULL DEFAULT (CURRENT_DATE),
+    objetivo_anual  INT             NOT NULL DEFAULT 12,
+    rol             ENUM('ROLE_USER','ROLE_ADMIN') NOT NULL DEFAULT 'ROLE_USER',
+    PRIMARY KEY (id_usuario),
+    CONSTRAINT uq_usuario_email UNIQUE (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------
+-- Tabla: libro  (catálogo global)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS libro (
+    id_libro    INT             NOT NULL AUTO_INCREMENT,
+    titulo      VARCHAR(200)    NOT NULL,
+    autor       VARCHAR(150)    NOT NULL,
+    genero      VARCHAR(100)    NULL,
+    editorial   VARCHAR(100)    NULL,
+    num_paginas INT             NOT NULL,
+    PRIMARY KEY (id_libro)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------
+-- Tabla: biblioteca  (relación usuario ↔ libro + estado lectura)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS biblioteca (
+    id_biblioteca   INT             NOT NULL AUTO_INCREMENT,
+    id_usuario      INT             NOT NULL,
+    id_libro        INT             NOT NULL,
+    estado          ENUM('PENDIENTE','EN_CURSO','LEIDO') NOT NULL DEFAULT 'PENDIENTE',
+    fecha_inicio    DATE            NULL,
+    fecha_fin       DATE            NULL,
+    nota            INT             NULL,
+    comentarios     TEXT            NULL,
+    PRIMARY KEY (id_biblioteca),
+    CONSTRAINT uq_biblioteca_usuario_libro UNIQUE (id_usuario, id_libro),
+    CONSTRAINT chk_biblioteca_nota CHECK (nota IS NULL OR nota BETWEEN 1 AND 10),
+    CONSTRAINT fk_biblioteca_usuario
+        FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_biblioteca_libro
+        FOREIGN KEY (id_libro) REFERENCES libro (id_libro)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------
+-- Tabla: accion_administradores  (auditoría de acciones admin)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS accion_administradores (
+    id_accion          INT             NOT NULL AUTO_INCREMENT,
+    id_admin           INT             NOT NULL,
+    accion             VARCHAR(100)    NOT NULL,
+    entidad_afectada   VARCHAR(50)     NULL,
+    id_entidad         INT             NULL,
+    fecha_accion       DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_accion),
+    CONSTRAINT fk_accion_admin
+        FOREIGN KEY (id_admin) REFERENCES usuario (id_usuario)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------
+-- Índices de consulta frecuente
+-- ------------------------------------------------------------
+CREATE INDEX idx_biblioteca_usuario    ON biblioteca (id_usuario);
+CREATE INDEX idx_biblioteca_estado     ON biblioteca (estado);
+CREATE INDEX idx_biblioteca_fecha_fin  ON biblioteca (fecha_fin);
+CREATE INDEX idx_libro_autor           ON libro (autor);
+CREATE INDEX idx_libro_genero          ON libro (genero);
