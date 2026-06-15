@@ -1,7 +1,7 @@
 # BookTrack
 
 ## Requisitos
-- Docker Desktop instalado y en ejecución
+- Docker Desktop instalado y en ejecución y estar en la carpeta booktrack
 
 ## Lanzar el proyecto completo
 
